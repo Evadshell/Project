@@ -5,34 +5,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import axios from 'axios';
 import Home from './Components/Home';
 import Login from './Components/Login';
-
+import PrivateRoute from './AuthRoute/AuthRoute';
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // useEffect(() => {
-  //   console.log("running")
-  //   // Check if the user is authenticated
-  //   axios.get('http://localhost:5000/login', { withCredentials: true })
-  //     .then(response => {
-  //       console.log("hehe",response);
-  //       if (response.data.isAuthenticated) {
-  //         setIsAuthenticated(true); // User is authenticated
-  //       } else {
-  //         setIsAuthenticated(false); // User is not authenticated
-  //       }
-  //     })
-  //     .catch(error => {
-  //       console.error(error);
-  //     });
-  // }, []);
 
   return (
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={<Home />}
-        />
+       
+        <Route path="/" element={<PrivateRoute />}>
+          <Route index element={<Home />} />
+        </Route>
       </Routes>
   );
 };

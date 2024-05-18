@@ -8,22 +8,35 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // const handleLogin = async (e) => {
+
+  //   e.preventDefault();
+  //   console.log("whit")
+  //   try {
+  //       console.log("hehe")
+  //   const response =   await axios.post('http://localhost:5000/login', { username, password });
+  //   if (response.status === 200) {
+  //       navigate('/');
+  //     } else {
+  //       console.log("Login failed");
+  //     }
+
+  //   console.log(response)
+  //   console.log("success");
+  //   } catch (error) {
+  //     console.error('Login failed:', error);
+  //   }
+  // };
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("whit")
     try {
-        console.log("hehe")
-    const response =   await axios.post('http://localhost:5000/login', { username, password });
-    if (response.status === 200) {
-        navigate('/');
-      } else {
-        console.log("Login failed");
-      }
-
-    console.log(response)
-    console.log("success");
+      const response = await axios.post('http://localhost:5000/login', { username, password }, { withCredentials: true });
+      navigate("/");
+      console.log(response.data);
     } catch (error) {
-      console.error('Login failed:', error);
+      navigate("/login");
+
+      console.error('Error logging in', error);
     }
   };
 
