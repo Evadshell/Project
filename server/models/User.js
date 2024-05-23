@@ -12,11 +12,21 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   personal_info: {
-    course: String,
+    name:String,
+    Qualification:Array,
+    age:String,
+
+        DOB:String,
+        contact_no:String,
+            Adress:String,
+        Adhaar_no:String,
+        Adhaar_photo:String,
+   
+  },
+   course: String,
     Payment_status: String,
     Franchise: String,
     ID_Card: String,
-  },
   Certificates: [String],
   role: { type: String, required: true, default: 'student' }
 });

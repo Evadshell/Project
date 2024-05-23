@@ -69,15 +69,57 @@ const ensureAuthenticated = (req, res, next) => {
 };
 
 app.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-  const newUser = new Users({ username, password });
-  await newUser.save();
-  res.send('User registered');
+  const {
+    username,
+    password,
+    name,
+    age,
+    dob,
+    adharNo,
+    contactNo,
+    course,
+    paymentStatus,
+    franchise,
+    idCard
+  } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new Users({
+      username,
+      password: hashedPassword,
+      personal_info: {
+        name,
+        age,
+        DOB: dob,
+        contact_no: contactNo,
+        Adhaar_no: adharNo
+      },
+      course,
+      Payment_status: paymentStatus,
+      Franchise: franchise,
+      ID_Card: idCard
+    });
+
+    await newUser.save();
+    res.status(201).send('User registered');
+  } catch (error) {
+    res.status(500).send('Error registering user: ' + error.message);
+  }
 });
 app.get('/home', ensureAuthenticated, (req, res) => {
   res.send('Welcome to the home page');
 });
-
+app.get("/deletestudent",async (req,res)=>{
+  const id = req.body.selectedStudentId;
+  try {
+    const result = await Users.deleteOne({ id });
+    console.log('User deleted:', result);
+  } catch (error) {
+    console.error('Error deleting user:', error);
+  }
+})
 app.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) { return next(err); }
@@ -90,7 +132,13 @@ app.get('/logout', (req, res, next) => {
     });
   });
 });
+app.get("/students",async (req,res)=>{
+  const franchise = (req.user.center_name)
+  const students = await Users.find({Franchise : franchise})
+  // console.log(students)
 
+  res.status(200).json({message:"students",students:students})
+})
 app.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
     console.log("loggedin")
