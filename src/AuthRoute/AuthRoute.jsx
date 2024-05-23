@@ -1,25 +1,7 @@
-// // src/AuthRoute/AuthRoute.jsx
-// import React from 'react';
-// import { Route, Navigate } from 'react-router-dom';
-
-// const AuthRoute = ({ component: Component, isAuthenticated, ...rest }) => (
-//   <Route
-//     {...rest}
-//     element={
-//       isAuthenticated ? (
-//         <Component />
-//       ) : (
-//         <Navigate to="/login" />
-//       )
-//     }
-//   />
-// );
-
-// export default AuthRoute;
-
 import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import axios from 'axios';
+import { Spinner } from '@chakra-ui/react';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -38,7 +20,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   }, []);
 
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return <div><Spinner /></div>;
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;

@@ -15,8 +15,10 @@ import UserRoute from "./routes/UserRoute.js"; // Correct import
 import initializePassport from "./config/passport_config.js";
 // import { ensureAuthenticated } from './middleware/authMiddleware.js';
 import MongoStore from "connect-mongo";
+import { ensureRole } from "./middleware/authMiddleware.js";
 import db from "./db.js";
 const app = express();
+const saltRounds = 10;
 
   
 app.use(cors({
@@ -38,28 +40,26 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: mongodbURL }),
   cookie: { maxAge: 24 * 60 * 60 * 1000 },
 }));
-initializePassport(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-// app.use('/login',UserRoute);
-// app.post('/login', passport.authenticate('local', {
-//   successRedirect: 'http://localhost:3000/',
-//   failureRedirect: 'http://localhost:3000/login',
-//   failureFlash: false,
-// },(req,res)=>{
-//   console.log("hehe");
-// }));
-// app.post('/login', passport.authenticate('local', {
-//   successRedirect: 'http://localhost:3000/',
-//   failureRedirect: 'http://localhost:3000/login',
-//   failureFlash: false
-// }), (req, res) => {
-//   console.log("Login successful");
+initializePassport(passport);
+
+// app.post('/login', passport.authenticate('local'), (req, res) => {
+//   console.log("authenticated",req.body.who)
+//   res.status(200).json({ message: "Login successful" , user:req.user });
 // });
 
-app.post('/login', passport.authenticate('local'), (req, res) => {
-  console.log("authenticated")
-  res.status(200).json({ message: "Login successful" });
+app.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return res.status(400).json({ message: info.message });
+
+    req.logIn(user,{session:true}, (err) => {
+      if (err) return next(err);
+      console.log("authenticated", req.body.who);
+      return res.status(200).json({ message: "Login successful", user: req.user });
+    });
+  })(req, res, next);
 });
 const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
@@ -74,16 +74,6 @@ app.post('/register', async (req, res) => {
   await newUser.save();
   res.send('User registered');
 });
-// app.get("/login", async (req, res) => {
-//   console.log("Checking authentication status");
-//   if (req.isAuthenticated()) {
-//     console.log("User is authenticated");
-//     res.status(200).json({ isAuthenticated: true });
-//   } else {
-//     console.log("User is not authenticated");
-//     res.status(401).json({ isAuthenticated: false, user: null });
-//   }
-// });
 app.get('/home', ensureAuthenticated, (req, res) => {
   res.send('Welcome to the home page');
 });
@@ -101,11 +91,12 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
-
 app.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
+    console.log("loggedin")
     res.status(200).json({ user: req.user });
   } else {
+    console.log("notloggedin")
     res.status(401).json({ message: 'Not authenticated' });
   }
 });

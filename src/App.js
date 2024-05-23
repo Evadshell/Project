@@ -6,12 +6,19 @@ import axios from 'axios';
 import Home from './Components/Home';
 import Login from './Components/Login';
 import PrivateRoute from './AuthRoute/AuthRoute';
+import StudentDashboard from './Components/Dashboard/StudentDashboard';
+import AdminDashboard from './Components/Dashboard/AdminDashboard';
+import FranchiseDashboard from './Components/Dashboard/FranchiseDashboard';
+import Register from './Components/Register';
 const App = () => {
 
   return (
       <Routes>
         <Route path="/login" element={<Login />} />
-       
+        <Route path="/register" element={<Register />} />
+        <Route path="/student" element={<StudentDashboard />} />
+        <Route path="/franchise" element={<FranchiseDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/" element={<PrivateRoute />}>
           <Route index element={<Home />} />
         </Route>
