@@ -162,8 +162,9 @@ app.post('/update', upload.single("idCard"), async (req, res) => {
     franchise,
   } = req.body;
   let idCard = req.file ? req.file.path : null;
-console.log(idCard)
+
   try {
+    // Create the base updateData object
     let updateData = {
       username,
       'personal_info.name': name,
@@ -173,10 +174,15 @@ console.log(idCard)
       'personal_info.Adhaar_no': adharNo,
       course,
       Payment_status: paymentStatus,
-      Franchise: franchise,
-      ID_Card: idCard
+      Franchise: franchise
     };
 
+    // If a new file is uploaded, add ID_Card to the updateData
+    if (idCard) {
+      updateData.ID_Card = idCard;
+    }
+
+    // If a password is provided, hash it and add to the updateData
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updateData.password = hashedPassword;
@@ -186,6 +192,25 @@ console.log(idCard)
     res.status(200).send('User updated successfully');
   } catch (error) {
     res.status(500).send('Error updating user: ' + error.message);
+  }
+});
+app.post('/upload-certificates', upload.array('certificates', 10), async (req, res) => {
+  const { studentId } = req.body;
+  const certificates = req.files.map(file => file.path);
+
+  try {
+    const student = await Users.findById(studentId);
+    if (!student) {
+      return res.status(404).send('Student not found');
+    }
+
+    // Append new certificates to the existing array
+    student.Certificates = student.Certificates ? [...student.Certificates, ...certificates] : certificates;
+
+    await student.save();
+    res.status(200).send('Certificates uploaded successfully');
+  } catch (error) {
+    res.status(500).send('Error uploading certificates: ' + error.message);
   }
 });
 app.get('/home', ensureAuthenticated, (req, res) => {
