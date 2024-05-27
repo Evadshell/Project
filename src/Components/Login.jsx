@@ -8,18 +8,10 @@ import {
   Flex,
   Box,
   Text,
-  Alert,
-  AlertIcon,
-  AlertDescription,
   FormControl,
   FormLabel,
   Input,
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalCloseButton,
-  ModalBody,
 } from "@chakra-ui/react";
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -28,25 +20,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const toast = useToast()
 
-  // const handleLogin = async (e) => {
-
-  //   e.preventDefault();
-  //   console.log("whit")
-  //   try {
-  //       console.log("hehe")
-  //   const response =   await axios.post('http://localhost:5000/login', { username, password });
-  //   if (response.status === 200) {
-  //       navigate('/');
-  //     } else {
-  //       console.log("Login failed");
-  //     }
-
-  //   console.log(response)
-  //   console.log("success");
-  //   } catch (error) {
-  //     console.error('Login failed:', error);
-  //   }
-  // };
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -55,7 +28,6 @@ const LoginPage = () => {
       navigate(`/${who}`);
       toast({
         title: 'Logged In',
-        // description: "We've created your account for you.",
         status: 'success',
         duration: 5000,
         isClosable: true,

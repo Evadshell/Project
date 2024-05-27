@@ -26,6 +26,7 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   SimpleGrid,
+  useToast
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router-dom";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
@@ -41,6 +42,7 @@ const ViewStudentDetails = () => {
   const thBg = useColorModeValue("gray.200", "gray.700");
   const hover = useColorModeValue("gray.100", "gray.900");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
   const {
     isOpen: isEditOpen,
     onOpen: onEditOpen,
@@ -177,6 +179,12 @@ const ViewStudentDetails = () => {
           "Content-Type": "multipart/form-data",
         },
       });
+      toast({
+        title: 'Certificate uploaded',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      })
       setCertificates([]); // Clear the file input after successful upload
       fetchStudents(); // Refresh the student details to include the newly uploaded certificates
     } catch (error) {
@@ -243,8 +251,6 @@ const ViewStudentDetails = () => {
                     <Th>Course</Th>
                     <Th>Payment Status</Th>
                     <Th>Franchise</Th>
-                    <Th>Certificates</Th>
-                    {/* <Th>ID Card</Th> */}
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -258,10 +264,7 @@ const ViewStudentDetails = () => {
                     <Td>{students.course}</Td>
                     <Td>{students.Payment_status}</Td>
                     <Td>{students.Franchise}</Td>
-                    <Td>{students.Certificates}</Td>
-                    {/* <Td>
-                  <Image src={students.idCardUrl} alt="ID Card" boxSize="100px" objectFit="cover" />
-                </Td> */}
+                   
                   </Tr>
                 </Tbody>
               </Table>
@@ -284,44 +287,44 @@ const ViewStudentDetails = () => {
               Upload Certificates
             </Button>
           </Box>
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={5}>
+          <Heading>Certificates :</Heading>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
             {students.Certificates &&
               students.Certificates.map((certificate, index) =>
                 certificate.endsWith(".pdf") ? (
                   <>
-                    <Box key={index} width="500px" height="600px">
-                      <Worker
+            <Box key={index} p={5} borderWidth="1px" borderRadius="lg" boxShadow="lg">
+                      <Worker 
                         workerUrl={`https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`}
                       >
-                        <Viewer
+                        <Viewer 
                           fileUrl={`http://localhost:5000/${certificate}`}
                         />
                       </Worker>
-                    </Box>
                     <Button
-                      mt={2}
-                      colorScheme="blue"
+mt={4}                      colorScheme="blue"
                       onClick={() =>
                         (window.location.href = `http://localhost:5000/${certificate}`)
                       }
                     >
                       Download
                     </Button>
+
+                    </Box>
                   </>
                 ) : (
-                  <div>
+                    <Box key={index} p={5} borderWidth="1px" borderRadius="lg" boxShadow="lg">
                     <Image
                       key={index}
                       src={`http://localhost:5000/${certificate}`}
                       alt={`Certificate ${index + 1}`}
                       borderRadius="lg"
-                      mb="10"
+ mb={4}
                       width="300px"
                       height="200px"
                       objectFit="cover"
                     />
                     <Button
-                      mt={2}
                       colorScheme="blue"
                       onClick={() =>
                         (window.location.href = `http://localhost:5000/${certificate}`)
@@ -329,7 +332,7 @@ const ViewStudentDetails = () => {
                     >
                       Download
                     </Button>
-                  </div>
+                  </Box>
                 )
               )}
           </SimpleGrid>
