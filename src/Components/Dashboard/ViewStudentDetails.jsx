@@ -302,7 +302,7 @@ const ViewStudentDetails = () => {
                         />
                       </Worker>
                     <Button
-mt={4}                      colorScheme="blue"
+                    mt={4}                      colorScheme="blue"
                       onClick={() =>
                         (window.location.href = `http://localhost:5000/${certificate}`)
                       }
@@ -319,7 +319,7 @@ mt={4}                      colorScheme="blue"
                       src={`http://localhost:5000/${certificate}`}
                       alt={`Certificate ${index + 1}`}
                       borderRadius="lg"
- mb={4}
+                      mb={4}
                       width="300px"
                       height="200px"
                       objectFit="cover"
@@ -375,7 +375,7 @@ mt={4}                      colorScheme="blue"
             formData={formData}
           />
         </>
-      ) : (
+        ) : (
         <></>
       )}
     </>

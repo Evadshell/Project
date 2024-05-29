@@ -68,7 +68,7 @@ function checkFileType(file, cb) {
 }
 app.get('/download/:id', async (req, res) => {
   try {
-    const user = await Users.findById(req.params.id);
+    const user = await Users.findById(req.params.id);//here a error is occuring see once
     if (!user || !user.ID_Card) {
       return res.status(404).send('File not found');
     }
@@ -238,8 +238,13 @@ app.get('/logout', (req, res, next) => {
   });
 });
 app.get("/students",async (req,res)=>{
-  const franchise = (req.user.center_name)
-  const students = await Users.find({Franchise : franchise})
+  const franchise = (req.user)
+  var students;
+  if(franchise)
+    {
+      students = await Users.find({Franchise : franchise.center_name})
+
+    }
   // console.log(students)
 
   res.status(200).json({message:"students",students:students})
