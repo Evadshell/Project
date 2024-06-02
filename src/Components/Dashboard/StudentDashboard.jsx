@@ -7,7 +7,10 @@ import {
   Flex,
   Image,
   Center,
-  useColorModeValue,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
   SimpleGrid,
   VStack,
   HStack,
@@ -28,23 +31,7 @@ import { useNavigate } from "react-router-dom";
 
 const ViewStudentProfile = () => {
   const [student, setStudent] = useState({});
-  const { id } = useParams();
-  const toast = useToast();
-  const [certificates, setCertificates] = useState([]);
   const navigate = useNavigate();
-  // const fetchStudent = async () => {
-  //   try {
-  //     const response = await axios.get(`http://localhost:5000/studentdetail?id=${id}`, { withCredentials: true });
-  //     setStudent(response.data.students[0]);
-  //     console.log(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching student:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchStudent();
-  // }, [id]);
   useEffect(() => {
         const checkAuth = async () => {
           try {
@@ -54,7 +41,7 @@ const ViewStudentProfile = () => {
             if (respone.data.user.role !== 'student') {
               navigate(`/${respone.data.user.role}`);
             }
-            console.log(respone.data.user);
+            // console.log(respone.data.user);
             setStudent(respone.data.user);
           } catch (error) {
             navigate("/login");
@@ -64,8 +51,22 @@ const ViewStudentProfile = () => {
         checkAuth();
       }, [navigate]);
 
+      const [tests, setTests] = useState([]);
+      useEffect(() => {
+        const fetchTests = async () => {
+          const response = await axios.get('http://localhost:5000/getTests');
+          setTests(response.data.tests);
+          console.log(tests)
+        };
+    
+        fetchTests();
+      }, []);
+    
+      const handleTakeTest = (testId) => {
+        navigate(`/take-test/${testId}`);
+      };
   const downloadIDCard = async () => {
-    window.location.href = `http://localhost:5000/download/${id}`;
+    window.location.href = `http://localhost:5000/download/${student._id}`;
   };
   const logout = async () => {
         try {
@@ -79,7 +80,14 @@ const ViewStudentProfile = () => {
     <>
       {student.personal_info ? (
         <>
+        {student.Payment_status!=="paid" ? <><Alert status='error'>
+        <AlertIcon />
+       Complete Your payment {student.Payment_status}
+      </Alert></>:<></>}
+
         <Container maxW="container.lg" p={4}>
+
+          
           <Box mb={6}>
             <Link  to="/">Home</Link>
             <Button  ml={10} onClick={logout} >Logout</Button>
@@ -91,7 +99,7 @@ const ViewStudentProfile = () => {
               </Heading>
             </CardHeader>
             <CardBody>
-              <Flex direction={{ base: "column", md: "row" }} align="center" mb={6}>
+              <Flex direction={{ base: "column", md: "column" }} align="center" mb={6}>
                 {student.ID_Card && student.ID_Card.endsWith(".pdf") ? (
                   <Box width="300px" height="400px">
                     <Worker workerUrl={`https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`}>
@@ -104,8 +112,6 @@ const ViewStudentProfile = () => {
                     alt="Student ID Card"
                     borderRadius="lg"
                     mb="4"
-                    width="300px"
-                    height="400px"
                     objectFit="cover"
                   />
                 )}
@@ -192,7 +198,23 @@ const ViewStudentProfile = () => {
                 )
               )}
           </SimpleGrid>
+          <div>
+            {tests? tests.map(test => (
+        <div key={test._id}>
+          <h2>{test.testName}</h2>
+          <Button onClick={() => handleTakeTest(test._id)}>Take Test</Button>
+        </div>
+      )) :<>Loading</>
+            }
+      {/* {tests.map(test => (
+        <div key={test._id}>
+          <h2>{test.testName}</h2>
+          <Button onClick={() => handleTakeTest(test._id)}>Take Test</Button>
+        </div>
+      ))} */}
+    </div>
         </Container></>
+        
       ) : (
         <Text>Loading...</Text>
       )}

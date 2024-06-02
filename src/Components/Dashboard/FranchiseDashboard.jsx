@@ -40,10 +40,17 @@ const FranchiseDashboard = () => {
         console.error('Error logging out:', error);
       }
     };
+
+  const handleCreateTest = () => {
+    navigate('/create-test');
+  };
   return (
     <div>
+      
       <AddStudent />
        <StudentCards students={students} />
+       <Button onClick={handleCreateTest}>Create Test</Button>
+
        <Button variant='solid' colorScheme="red" onClick={logout} >Logout</Button>
     </div>
   )

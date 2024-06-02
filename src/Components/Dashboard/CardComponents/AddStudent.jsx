@@ -29,7 +29,6 @@ const AddStudent = () => {
     course: "",
     paymentStatus: "",
     franchise: "",
-    Certificates: "",
   });
 
   const handleImageChange = (e) => {
@@ -121,6 +120,7 @@ const AddStudent = () => {
                 <FormLabel>Date of Birth</FormLabel>
                 <Input
                   name="dob"
+                  type="date"
                   value={formData.dob}
                   onChange={handleChange}
                 />
@@ -174,14 +174,7 @@ const AddStudent = () => {
                   onChange={handleImageChange}
                 />
               </FormControl>
-              <FormControl isRequired mt={4}>
-                <FormLabel>Certificates</FormLabel>
-                <Input
-                  name="Certificates"
-                  value={formData.Certificates}
-                  onChange={handleChange}
-                />
-              </FormControl>
+             
               <ModalFooter>
                 <Button colorScheme="blue" type="submit">
                   Add Student

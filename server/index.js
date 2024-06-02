@@ -6,8 +6,10 @@ import passport from "passport";
 import session from "express-session";
 import multer from 'multer';
 import {PORT,mongodbURL} from './config/config.js';
+import Franchise from './models/Franchise.js';
 import cors from "cors";
 import  Users  from "./models/User.js";
+import Test from "./models/Test.js";
 import initializePassport from "./config/passport_config.js";
 // import { ensureAuthenticated } from './middleware/authMiddleware.js';
 import MongoStore from "connect-mongo";
@@ -44,6 +46,50 @@ initializePassport(passport);
 //   console.log("authenticated",req.body.who)
 //   res.status(200).json({ message: "Login successful" , user:req.user });
 // });
+
+
+app.post('/addTest', async (req, res) => {
+  const { testName, date, noOfQuestions, questions, duration, franchise } = req.body;
+
+  try {
+    const newTest = new Test({
+      testName,
+      date,
+      noOfQuestions,
+      questions,
+      duration,
+      franchise,
+    });
+
+    await newTest.save();
+    res.status(201).json({ message: 'Test created successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating test', error: error.message });
+  }
+});
+app.get('/getTests',async(req,res)=>{
+  try {
+    const test = await Test.find();
+    if (!test) {
+      return res.status(404).send('Test not found');
+    }
+    console.log(test)
+    res.status(200).json(test);
+  } catch (error) {
+    res.status(500).send('Error fetching test: ' + error.message);
+  } 
+})
+app.get('/getTest/:id', async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test) {
+      return res.status(404).send('Test not found');
+    }
+    res.status(200).json(test);
+  } catch (error) {
+    res.status(500).send('Error fetching test: ' + error.message);
+  }
+});
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/'); // specify the folder to store the uploaded files
@@ -116,7 +162,6 @@ app.post("/register", upload.single("idCard"), async (req, res) => {
     course,
     paymentStatus,
     franchise,
-    Certificates,
   } = req.body;
   let idCard = req.file ? req.file.path : null;
 
@@ -137,7 +182,6 @@ app.post("/register", upload.single("idCard"), async (req, res) => {
       Payment_status: paymentStatus,
       Franchise: franchise,
       ID_Card: idCard,
-      Certificates: Certificates,
     });
 
     await newUser.save();
@@ -237,6 +281,100 @@ app.get('/logout', (req, res, next) => {
     });
   });
 });
+
+
+app.get('/franchises', async (req, res) => {
+  try {
+    const franchises = await Franchise.find();
+    res.json({ franchises });
+  } catch (error) {
+    res.status(500).send('Error fetching franchises: ' + error.message);
+  }
+});
+
+app.post('/franchise', upload.single('center_image'), async (req, res) => {
+  const {
+    username,
+    password,
+    center_name,
+    address,
+    director_name,
+    contact,
+    email,
+  } = req.body;
+  const center_image = req.file ? req.file.path : null;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newFranchise = new Franchise({
+      username,
+      password: hashedPassword,
+      center_name,
+      address,
+      director_name,
+      center_image,
+      contact,
+      email,
+      role: 'franchise',
+    });
+
+    await newFranchise.save();
+    res.status(201).send('Franchise added');
+  } catch (error) {
+    res.status(500).send('Error adding franchise: ' + error.message);
+  }
+});
+
+app.put('/franchise/:id', upload.single('center_image'), async (req, res) => {
+  const {
+    username,
+    password,
+    center_name,
+    address,
+    director_name,
+    contact,
+    email,
+  } = req.body;
+  const center_image = req.file ? req.file.path : null;
+
+  try {
+    let updateData = {
+      username,
+      center_name,
+      address,
+      director_name,
+      contact,
+      email,
+    };
+
+    if (center_image) {
+      updateData.center_image = center_image;
+    }
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    await Franchise.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    res.status(200).send('Franchise updated');
+  } catch (error) {
+    res.status(500).send('Error updating franchise: ' + error.message);
+  }
+});
+
+app.delete('/franchise/:id', async (req, res) => {
+  try {
+    await Franchise.findByIdAndDelete(req.params.id);
+    res.status(200).send('Franchise deleted');
+  } catch (error) {
+    res.status(500).send('Error deleting franchise: ' + error.message);
+  }
+});
+
+
+
 app.get("/students",async (req,res)=>{
   const franchise = (req.user)
   var students;
