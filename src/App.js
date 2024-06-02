@@ -6,20 +6,18 @@ import axios from 'axios';
 import Home from './Components/Home';
 import Login from './Components/Login';
 import PrivateRoute from './AuthRoute/AuthRoute';
-import StudentDashboard from './Components/Dashboard/StudentDashboard';
-import AdminDashboard from './Components/Dashboard/AdminDashboard';
-import FranchiseDashboard from './Components/Dashboard/FranchiseDashboard';
-import Register from './Components/Register';
-import ViewStudentDetails from './Components/Dashboard/ViewStudentDetails';
-import FranchiseDetails from './Components/Dashboard/FranchiseDetails';
-import CreateTest from './Components/CreateTest';
-import TakeTest from './Components/TakeTest';
+import StudentDashboard from './Components/Dashboard/Student/StudentDashboard';
+import AdminDashboard from './Components/Dashboard/Admin/AdminDashboard';
+import FranchiseDashboard from './Components/Dashboard/Franchise/FranchiseDashboard';
+import ViewStudentDetails from './Components/Dashboard/Franchise/ViewStudentDetails';
+import FranchiseDetails from './Components/Dashboard/Admin/FranchiseDetails';
+import TakeTest from './Components/Dashboard/Student/TakeTest';
+import CreateTest from './Components/Dashboard/Franchise/CreateTest'
 const App = () => {
 
   return (
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/franchise" element={<FranchiseDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />

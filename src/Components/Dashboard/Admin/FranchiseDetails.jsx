@@ -16,8 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { FaTrashAlt, FaEye } from "react-icons/fa";
 // import StudentCards from "./StudentCards";
-import AddStudent from "./CardComponents/AddStudent";
-
+import AddStudent from "../Franchise/CardComponents/AddStudent";
 const FranchiseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
