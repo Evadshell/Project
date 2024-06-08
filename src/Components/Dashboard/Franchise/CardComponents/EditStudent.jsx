@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import {
+  Heading,
     ModalOverlay,
     Button,
   ModalContent,

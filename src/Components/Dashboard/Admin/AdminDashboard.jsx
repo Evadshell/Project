@@ -12,35 +12,75 @@ import {
   IconButton,
   Text,
   Button,
+  Image,
+  Box,
 } from "@chakra-ui/react";
 import { FaEdit, FaTrashAlt, FaEye, FaPlus } from "react-icons/fa";
 import EditFranchise from "./EditFranchise";
 import AddFranchise from "./AddFranchise"; // AddFranchise component
-
+import AddNotice from "./AddNotice";
+import NoticeDisplay from "./NoticeDisplay";
 const AdminDashboard = () => {
   const [franchises, setFranchises] = useState([]);
   const [selectedFranchiseId, setSelectedFranchiseId] = useState("");
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const navigate = useNavigate();
+  const [isNoticeOpen, setIsNoticeOpen] = useState(false);
+  const [notices, setNotices] = useState([]);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const respone = await axios.get("http://localhost:5000/user", {
+          withCredentials: true,
+        });
+        if (respone.data.user.role !== "admin") {
+          navigate(`/${respone.data.user.role}`);
+        }
+      } catch (error) {
+        navigate("/login");
+      }
+    };
+    checkAuth();
     const fetchFranchises = async () => {
       try {
         const response = await axios.get("http://localhost:5000/franchises", {
           withCredentials: true,
         });
+
         setFranchises(response.data.franchises);
       } catch (error) {
         console.error("Error fetching franchises:", error);
       }
     };
     fetchFranchises();
-  }, []);
+    const fetchNotices = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/notices", {
+          withCredentials: true,
+        });
+        setNotices(response.data.notices);
+      } catch (error) {
+        console.error("Error fetching notices:", error);
+      }
+    };
+    fetchNotices();
+  }, [navigate]);
 
   const handleEditClick = (id) => {
     setSelectedFranchiseId(id);
     setIsEditOpen(true);
+  };
+  const handleDeleteNotice = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/notices/${id}`, {
+        withCredentials: true,
+      });
+      setNotices(notices.filter((notice) => notice._id !== id));
+    } catch (error) {
+      console.error("Error deleting notice:", error);
+    }
   };
 
   const handleDeleteClick = async (id) => {
@@ -48,7 +88,7 @@ const AdminDashboard = () => {
       await axios.delete(`http://localhost:5000/franchise/${id}`, {
         withCredentials: true,
       });
-      setFranchises(franchises.filter(franchise => franchise._id !== id));
+      setFranchises(franchises.filter((franchise) => franchise._id !== id));
     } catch (error) {
       console.error("Error deleting franchise:", error);
     }
@@ -59,15 +99,19 @@ const AdminDashboard = () => {
   };
   const logout = async () => {
     try {
-      await axios.get('http://localhost:5000/logout', { withCredentials: true });
+      await axios.get("http://localhost:5000/logout", {
+        withCredentials: true,
+      });
       navigate("/login");
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
   return (
     <div>
-      <Button onClick={logout} >Logout</Button>
+            <NoticeDisplay notices={notices} />
+
+      <Button onClick={logout}>Logout</Button>
       <Text fontSize="xl" mb="4">
         Franchises
       </Text>
@@ -78,6 +122,14 @@ const AdminDashboard = () => {
         mb={4}
       >
         Add Franchise
+      </Button>
+      <Button
+        leftIcon={<FaPlus />}
+        colorScheme="teal"
+        onClick={() => setIsNoticeOpen(true)}
+        mb={4}
+      >
+        Add Notice
       </Button>
       <TableContainer>
         <Table variant="simple">
@@ -121,6 +173,7 @@ const AdminDashboard = () => {
           </Tbody>
         </Table>
       </TableContainer>
+ 
       {isEditOpen && (
         <EditFranchise
           isEditOpen={isEditOpen}
@@ -132,6 +185,12 @@ const AdminDashboard = () => {
         <AddFranchise
           isAddOpen={isAddOpen}
           onClose={() => setIsAddOpen(false)}
+        />
+      )}
+      {isNoticeOpen && (
+        <AddNotice
+          isOpen={isNoticeOpen}
+          onClose={() => setIsNoticeOpen(false)}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ import ViewStudentDetails from './Components/Dashboard/Franchise/ViewStudentDeta
 import FranchiseDetails from './Components/Dashboard/Admin/FranchiseDetails';
 import TakeTest from './Components/Dashboard/Student/TakeTest';
 import CreateTest from './Components/Dashboard/Franchise/CreateTest'
+import FranchiseProfile from './Components/Dashboard/Franchise/FranchiseProfile';
 const App = () => {
 
   return (
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/franchise/:id" element={<FranchiseDetails />} />
         <Route path="/franchise-dashboard" element={<FranchiseDashboard />} />
+        <Route path="/franchise/:id/profile" element={<FranchiseProfile />} />
 
         <Route path="/create-test" element={<CreateTest />} />
         <Route path="/take-test/:testId" element={<TakeTest />} />

@@ -9,11 +9,14 @@ import {PORT,mongodbURL} from './config/config.js';
 import Franchise from './models/Franchise.js';
 import cors from "cors";
 import  Users  from "./models/User.js";
+import Admin from "./models/Admin.js";
 import Test from "./models/Test.js";
 import initializePassport from "./config/passport_config.js";
 // import { ensureAuthenticated } from './middleware/authMiddleware.js';
 import MongoStore from "connect-mongo";
 import path from 'path';
+import mongoose from 'mongoose';
+const { ObjectId } = mongoose.Types;
 
 const app = express();
 
@@ -74,7 +77,7 @@ app.get('/getTests',async(req,res)=>{
       return res.status(404).send('Test not found');
     }
     console.log(test)
-    res.status(200).json(test);
+    res.status(200).json({test:test});
   } catch (error) {
     res.status(500).send('Error fetching test: ' + error.message);
   } 
@@ -150,6 +153,74 @@ const ensureAuthenticated = (req, res, next) => {
   }
   res.status(401).json({ message: 'Unauthorized' });
 };
+app.put("/franchise/:id", upload.single("center_image"), async (req, res) => {
+  const { id } = req.params;
+  const { center_name, address, director_name, contact, email } = req.body;
+  const center_image = req.file ? req.file.path : null;
+
+  try {
+    const franchise = await Franchise.findById(id);
+    if (!franchise) {
+      return res.status(404).send("Franchise not found");
+    }
+
+    franchise.center_name = center_name;
+    franchise.address = address;
+    franchise.director_name = director_name;
+    franchise.contact = contact;
+    franchise.email = email;
+    if (center_image) {
+      franchise.center_image = center_image;
+    }
+
+    await franchise.save();
+    res.status(200).send("Franchise updated successfully");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error updating franchise: " + error.message);
+  }
+});
+app.post('/notices', upload.single('image'), async (req, res) => {
+  try {
+    const { text } = req.body;
+    const image = req.file ? req.file.path : null;
+
+    const admin = await Admin.findOne(); // Assuming there's only one admin
+    const newNotice = { text, image };
+    admin.notices.push(newNotice);
+
+    await admin.save();
+    res.status(201).send('Notice added successfully');
+  } catch (error) {
+    res.status(500).send('Error adding notice: ' + error.message);
+  }
+});
+
+app.get('/notices', async (req, res) => {
+  try {
+    const admin = await Admin.findOne(); // Assuming there's only one admin
+    res.status(200).json({ notices: admin.notices });
+  } catch (error) {
+    res.status(500).send('Error fetching notices: ' + error.message);
+  }
+});
+
+// app.delete('/notices/:id', async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const notice = await Notice.findByIdAndDelete(id);
+
+//     if (!notice) {
+//       return res.status(404).send({ message: 'Notice not found' });
+//     }
+
+//     res.status(200).send({ message: 'Notice deleted successfully' });
+//   } catch (error) {
+//     console.error('Error deleting notice:', error);
+//     res.status(500).send({ message: 'Internal server error' });
+//   }
+// });
+
 app.post("/register", upload.single("idCard"), async (req, res) => {
   const {
     username,
@@ -187,6 +258,7 @@ app.post("/register", upload.single("idCard"), async (req, res) => {
     await newUser.save();
     res.status(201).send("User registered");
   } catch (error) {
+    console.log(error)
     res.status(500).send("Error registering user: " + error.message);
   }
 });
@@ -281,14 +353,97 @@ app.get('/logout', (req, res, next) => {
     });
   });
 });
+app.get('/scores/:userId', async (req, res) => {
+  const { userId } = req.params;
 
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
 
+  try {
+    const user = await Users.findById(userId).populate('testScores.testId', 'testName');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ testScores: user.testScores });
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while retrieving the test scores' });
+  }
+});
+app.get('/previousScore/:userId/:testId', async (req, res) => {
+  const { userId, testId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(testId)) {
+    return res.status(400).json({ error: 'Invalid user or test ID' });
+  }
+
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const previousScores = user.testScores.filter(score => score.testId.toString() === testId);
+    if (previousScores.length > 0) {
+      res.status(200).json({ previousScores });
+    } else {
+      res.status(404).json({ message: 'No previous scores found for this test' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while retrieving the test scores' });
+  }
+});
+
+app.post('/submitScore', async (req, res) => {
+  const { userId, testId, score } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(testId)) {
+    return res.status(400).json({ error: 'Invalid user or test ID' });
+  }
+
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const newScore = { testId, score };
+    user.testScores.push(newScore);
+
+    await user.save();
+    res.status(200).json({ message: 'Test score submitted successfully', testScores: user.testScores });
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while submitting the test score' });
+  }
+});
 app.get('/franchises', async (req, res) => {
   try {
     const franchises = await Franchise.find();
     res.json({ franchises });
   } catch (error) {
     res.status(500).send('Error fetching franchises: ' + error.message);
+  }
+});
+
+app.get('/franchise/:id', async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    let franchise;
+    if (ObjectId.isValid(id)) {
+      franchise = await Franchise.findById(id);
+    } else {
+      franchise = await Franchise.findOne({ center_name: id });
+    }
+
+    if (!franchise) {
+      return res.status(404).send('Franchise not found');
+    }
+
+    res.status(200).json({ franchise });
+  } catch (error) {
+    res.status(500).send('Error fetching franchise: ' + error.message);
   }
 });
 
@@ -325,8 +480,8 @@ app.post('/franchise', upload.single('center_image'), async (req, res) => {
     res.status(500).send('Error adding franchise: ' + error.message);
   }
 });
-
 app.put('/franchise/:id', upload.single('center_image'), async (req, res) => {
+  const id = req.params.id;
   const {
     username,
     password,
@@ -357,7 +512,17 @@ app.put('/franchise/:id', upload.single('center_image'), async (req, res) => {
       updateData.password = hashedPassword;
     }
 
-    await Franchise.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    let franchise;
+    if (ObjectId.isValid(id)) {
+      franchise = await Franchise.findByIdAndUpdate(id, updateData, { new: true });
+    } else {
+      franchise = await Franchise.findOneAndUpdate({ center_name: id }, updateData, { new: true });
+    }
+
+    if (!franchise) {
+      return res.status(404).send('Franchise not found');
+    }
+
     res.status(200).send('Franchise updated');
   } catch (error) {
     res.status(500).send('Error updating franchise: ' + error.message);
@@ -375,12 +540,13 @@ app.delete('/franchise/:id', async (req, res) => {
 
 
 
-app.get("/students",async (req,res)=>{
-  const franchise = (req.user)
+app.get("/students/:name",async (req,res)=>{
+  const id = (req.params.name)
+  console.log(id)
   var students;
-  if(franchise)
+  if(id)
     {
-      students = await Users.find({Franchise : franchise.center_name})
+      students = await Users.find({Franchise : id})
 
     }
   // console.log(students)

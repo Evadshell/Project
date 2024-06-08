@@ -22,6 +22,7 @@ import {
   CardFooter,
   CardHeader,
   useToast,
+  Spacer,
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router-dom";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
@@ -32,6 +33,7 @@ import { useNavigate } from "react-router-dom";
 const ViewStudentProfile = () => {
   const [student, setStudent] = useState({});
   const navigate = useNavigate();
+  const [tests, setTests] = useState([]);
   useEffect(() => {
         const checkAuth = async () => {
           try {
@@ -49,18 +51,21 @@ const ViewStudentProfile = () => {
         };
     
         checkAuth();
-      }, [navigate]);
 
-      const [tests, setTests] = useState([]);
-      useEffect(() => {
         const fetchTests = async () => {
           const response = await axios.get('http://localhost:5000/getTests');
-          setTests(response.data.tests);
-          console.log(tests)
+          setTests(response.data.test);
+          console.log(response)
+          // console.log(tests)
+          // console.log(tests)
         };
     
         fetchTests();
-      }, []);
+
+      }, [navigate]);
+
+      // useEffect(() => {
+      // }, [tests]);
     
       const handleTakeTest = (testId) => {
         navigate(`/take-test/${testId}`);
@@ -161,7 +166,7 @@ const ViewStudentProfile = () => {
             </CardBody>
           </Card>
           <Heading mb={4}>Certificates</Heading>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={10}>
+          <SimpleGrid mb={4} columns={{ base: 1, md: 2, lg: 3 }} spacing={10}>
             {student.Certificates &&
               student.Certificates.map((certificate, index) =>
                 certificate.endsWith(".pdf") ? (
@@ -170,7 +175,8 @@ const ViewStudentProfile = () => {
                       <Viewer fileUrl={`http://localhost:5000/${certificate}`} />
                     </Worker>
                     <Button
-                      mt={4}
+                      mt={10}
+                      mb={10}
                       colorScheme="blue"
                       onClick={() => (window.location.href = `http://localhost:5000/${certificate}`)}
                     >
@@ -197,21 +203,26 @@ const ViewStudentProfile = () => {
                   </Box>
                 )
               )}
+<Spacer />
           </SimpleGrid>
-          <div>
+                <Box mt={12} >
+              <Heading mt={12} mb={4} >Test Area</Heading>
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={10}>
             {tests? tests.map(test => (
         <div key={test._id}>
           <h2>{test.testName}</h2>
-          <Button onClick={() => handleTakeTest(test._id)}>Take Test</Button>
+          <Button colorScheme="green" onClick={() => handleTakeTest(test._id)}>Take Test</Button>
         </div>
       )) :<>Loading</>
             }
-      {/* {tests.map(test => (
-        <div key={test._id}>
-          <h2>{test.testName}</h2>
-          <Button onClick={() => handleTakeTest(test._id)}>Take Test</Button>
-        </div>
-      ))} */}
+              </SimpleGrid>
+                
+
+                </Box>
+
+
+          <div>
+   
     </div>
         </Container></>
         
